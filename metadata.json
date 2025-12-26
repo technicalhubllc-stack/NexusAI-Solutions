@@ -1,0 +1,7 @@
+{
+  "name": "NexusAI Solutions",
+  "description": "A premium AI solutions provider landing page featuring intelligent dashboards and a search-grounded AI insights engine for real-time market analysis.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
