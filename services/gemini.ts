@@ -16,6 +16,11 @@ export const getAIInsights = async (prompt: string): Promise<AIResponse> => {
       },
     });
 
+    // Handle Safety Moderation blocks
+    if (response.candidates?.[0]?.finishReason === 'SAFETY') {
+      throw new Error("ERROR_SAFETY_BLOCKED");
+    }
+
     const text = response.text || "I couldn't generate an analysis at this time.";
     const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
     
@@ -30,8 +35,22 @@ export const getAIInsights = async (prompt: string): Promise<AIResponse> => {
       }));
 
     return { text, sources };
-  } catch (error) {
+  } catch (error: any) {
     console.error("Gemini API Error:", error);
-    throw new Error("Failed to fetch AI insights. Please try again later.");
+    
+    // Check for specific error signatures in the message or status
+    const msg = error.message?.toLowerCase() || "";
+    
+    if (msg.includes("429") || msg.includes("quota")) {
+      throw new Error("ERROR_QUOTA_EXCEEDED");
+    }
+    if (msg.includes("401") || msg.includes("403") || msg.includes("api key")) {
+      throw new Error("ERROR_AUTH_INVALID");
+    }
+    if (msg === "ERROR_SAFETY_BLOCKED") {
+      throw error;
+    }
+    
+    throw new Error("ERROR_GENERIC");
   }
 };

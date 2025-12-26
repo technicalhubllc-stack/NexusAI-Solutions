@@ -58,8 +58,21 @@ export const SearchGroundingTool: React.FC<{ lang: Lang }> = ({ lang }) => {
 
       setResult(data);
       setHistory(prev => [newHistoryItem, ...prev].slice(0, 10)); // Keep last 10
-    } catch (err) {
-      setError(lang === 'ar' ? 'فشل التحليل. يرجى التحقق من الإعدادات.' : 'Analysis failed. Ensure your environment is configured correctly.');
+    } catch (err: any) {
+      const errorKey = err.message;
+      let userMessage = lang === 'ar' ? 'حدث خطأ غير متوقع. يرجى المحاولة لاحقاً.' : 'An unexpected error occurred. Please try again later.';
+
+      if (errorKey === "ERROR_QUOTA_EXCEEDED") {
+        userMessage = lang === 'ar' ? 'تم تجاوز حصة الاستخدام (Rate Limit). يرجى الانتظار دقيقة والمحاولة مرة أخرى.' : 'Usage quota exceeded. Please wait a minute and try again.';
+      } else if (errorKey === "ERROR_AUTH_INVALID") {
+        userMessage = lang === 'ar' ? 'مشكلة في مفتاح واجهة برمجة التطبيقات. يرجى التأكد من تكوين بيئة العمل بشكل صحيح.' : 'API Key issue detected. Please ensure your environment is configured correctly.';
+      } else if (errorKey === "ERROR_SAFETY_BLOCKED") {
+        userMessage = lang === 'ar' ? 'تم حظر هذا الطلب بواسطة فلاتر سلامة المحتوى. يرجى إعادة صياغة سؤالك.' : 'This request was blocked by content safety filters. Please try rephrasing your query.';
+      } else if (err.name === 'TypeError' && err.message === 'Failed to fetch') {
+        userMessage = lang === 'ar' ? 'فشل الاتصال بالشبكة. يرجى التحقق من اتصالك بالإنترنت.' : 'Network connection failure. Please check your internet connection.';
+      }
+
+      setError(userMessage);
     } finally {
       setLoading(false);
     }
@@ -81,13 +94,37 @@ export const SearchGroundingTool: React.FC<{ lang: Lang }> = ({ lang }) => {
   const suggestions = lang === 'ar' ? [
     "اتجاهات الذكاء الاصطناعي في التجزئة 2025",
     "تأثير الذكاء الاصطناعي التوليدي على سلاسل التوريد",
-    "أحدث معايير حوكمة الذكاء الاصطناعي",
-    "عائد استثمار الأتمتة في التكنولوجيا المالية"
+    "أحدث معايير حوكمة الذكاء الاصطناعي للمؤسسات",
+    "عائد استثمار الأتمتة في التكنولوجيا المالية",
+    "مخاطر الأمن السيبراني في أنظمة الذكاء الاصطناعي الوكيل",
+    "تشخيصات الرعاية الصحية باستخدام الذكاء الاصطناعي متعدد الوسائط",
+    "تحسين شبكات الطاقة المستدامة عبر الذكاء الاصطناعي",
+    "أفضل الممارسات لتنسيق نماذج اللغات الكبيرة في المؤسسات",
+    "تأثير الذكاء الاصطناعي على مقاييس إنتاجية القوى العاملة",
+    "مستقبل البنية التحتية السيادية للذكاء الاصطناعي",
+    "تبني الذكاء الاصطناعي للحواف في التصنيع الصناعي",
+    "الاعتبارات الأخلاقية للذكاء الاصطناعي في التوظيف",
+    "اكتشاف الاحتيال في الوقت الفعلي باستخدام الشبكات العصبية الرسومية",
+    "مقارنة بين نماذج اللغات المغلقة والمفتوحة المصدر للمؤسسات",
+    "التخصيص المدفوع بالذكاء الاصطناعي في التجارة الإلكترونية الفاخرة",
+    "الصيانة التنبؤية في صناعة الطيران"
   ] : [
     "AI trends in Retail 2025",
     "Generative AI impact on supply chain",
     "Latest corporate AI governance standards",
-    "ROI of AI automation in fintech"
+    "ROI of AI automation in fintech",
+    "Cybersecurity risks in agentic AI systems",
+    "Healthcare diagnostics using multi-modal AI",
+    "Sustainable energy grid optimization via AI",
+    "Enterprise LLM orchestration best practices",
+    "Impact of AI on workforce productivity metrics",
+    "Future of sovereign AI infrastructure",
+    "Edge AI adoption in industrial manufacturing",
+    "Ethical considerations for AI in recruitment",
+    "Real-time fraud detection using graph neural networks",
+    "Comparison of closed vs open source LLMs for enterprise",
+    "AI-driven personalization in luxury e-commerce",
+    "Predictive maintenance in the aerospace industry"
   ];
 
   return (
@@ -135,16 +172,40 @@ export const SearchGroundingTool: React.FC<{ lang: Lang }> = ({ lang }) => {
           </div>
 
           {loading && (
-            <div className="animate-pulse space-y-4 mb-8">
-              <div className="h-4 bg-slate-800 rounded w-3/4"></div>
-              <div className="h-4 bg-slate-800 rounded w-full"></div>
-              <div className="h-4 bg-slate-800 rounded w-5/6"></div>
+            <div className="glass p-8 rounded-3xl animate-pulse mb-8 border-white/5">
+              <div className="flex items-center gap-3 mb-8">
+                <div className="w-10 h-10 rounded-full bg-slate-800" />
+                <div className="space-y-2">
+                  <div className="h-4 bg-slate-800 rounded w-32" />
+                  <div className="h-2 bg-slate-800 rounded w-48" />
+                </div>
+              </div>
+              <div className="space-y-4 mb-10">
+                <div className="h-3 bg-slate-800 rounded w-full" />
+                <div className="h-3 bg-slate-800 rounded w-full" />
+                <div className="h-3 bg-slate-800 rounded w-5/6" />
+                <div className="h-3 bg-slate-800 rounded w-4/6" />
+              </div>
+              <div className="pt-6 border-t border-white/5">
+                <div className="h-2 bg-slate-800 rounded w-24 mb-4" />
+                <div className="flex gap-4">
+                  <div className="h-8 bg-slate-800 rounded-lg w-28" />
+                  <div className="h-8 bg-slate-800 rounded-lg w-32" />
+                  <div className="h-8 bg-slate-800 rounded-lg w-20" />
+                </div>
+              </div>
             </div>
           )}
 
           {error && (
-            <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-center mb-8">
-              {error}
+            <div className="p-6 bg-red-500/10 border border-red-500/20 text-red-400 rounded-2xl flex items-start gap-4 mb-8 animate-in fade-in zoom-in-95 duration-300">
+              <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center shrink-0">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+              </div>
+              <div>
+                <h5 className="font-bold text-sm mb-1">{lang === 'ar' ? 'تنبيه النظام' : 'System Alert'}</h5>
+                <p className="text-sm opacity-90 leading-relaxed">{error}</p>
+              </div>
             </div>
           )}
 
